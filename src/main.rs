@@ -1,5 +1,4 @@
-use std::fs::File;
-use std::io::{BufWriter, Write};
+use minifb::{Key, Window, WindowOptions};
 
 mod ray;
 mod vec3;
@@ -39,9 +38,9 @@ fn ray_color(r: &Ray) -> Color {
 fn main() -> Result<(), std::io::Error> {
     // Image
     let aspect_ratio = 16.0 / 9.0;
-    let image_width = 800;
-    let height = ((image_width as f64) / aspect_ratio) as i32;
-    let image_height = if height > 1 { height } else { 1 };
+    let image_width: usize = 800;
+    let height = ((image_width as f64) / aspect_ratio) as usize;
+    let image_height: usize = if height > 1 { height } else { 1 };
 
     // Camera
     let focal_length = 1.0;
@@ -74,32 +73,41 @@ fn main() -> Result<(), std::io::Error> {
 
     let pixel00_loc = viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v);
 
-    // Open output file
-    let file = File::create("output.ppm")?;
-    let mut writer = BufWriter::new(file);
+    // Allocate a BGRA-encoded frame buffer
+    let mut buffer: Vec<u32> = vec![0; image_width * image_height];
 
-    // Render
-    writeln!(writer, "P3")?;
-    writeln!(writer, "{} {}", image_width, image_height)?;
-    writeln!(writer, "255")?;
-
-    for j in 0..image_height {
-        print!("\rScanlines remaining: {} ", image_height - j);
-        for i in 0..image_width {
+    // --- render loop ---
+    for y in 0..image_height {
+        // print!("\rScanlines remaining: {} ", image_height - j);
+        for x in 0..image_width {
             let pixel_center =
-                pixel00_loc + (i as f64 * pixel_delta_u) + (j as f64 * pixel_delta_v);
+                pixel00_loc + (x as f64 * pixel_delta_u) + (y as f64 * pixel_delta_v);
             let ray_direction = pixel_center - camera_center;
             let r = Ray::new(camera_center, ray_direction);
             let pixel_color = ray_color(&r);
 
             // write color
-            let ir = (255.999 * pixel_color.x) as i32;
-            let ig = (255.999 * pixel_color.y) as i32;
-            let ib = (255.999 * pixel_color.z) as i32;
-            writeln!(writer, "{} {} {}", ir, ig, ib)?;
+            let ir = (255.999 * pixel_color.x) as u32;
+            let ig = (255.999 * pixel_color.y) as u32;
+            let ib = (255.999 * pixel_color.z) as u32;
+            // writeln!(writer, "{} {} {}", ir, ig, ib)?;
+            buffer[y * image_width + x] = (255 << 24) | (ir << 16) | (ig << 8) | ib;
         }
     }
-    println!("\rDone!                      \n");
+
+    let mut window = Window::new(
+        "Raytracer ‑ ESC to exit",
+        image_width,
+        image_height,
+        WindowOptions::default(),
+    )
+    .unwrap();
+
+    while window.is_open() && !window.is_key_down(Key::Escape) {
+        window
+            .update_with_buffer(&buffer, image_width, image_height)
+            .unwrap();
+    }
 
     Ok(())
 }

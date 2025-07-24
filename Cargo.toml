@@ -6,3 +6,4 @@ description = "A simple ray tracer written in Rust"
 readme = "README.md"
 
 [dependencies]
+minifb = "0.28"
