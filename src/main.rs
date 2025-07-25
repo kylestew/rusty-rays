@@ -1,25 +1,23 @@
 use minifb::{Key, Window, WindowOptions};
 
-mod ray;
-mod vec3;
+mod core;
+mod shapes;
 
-use ray::Ray;
-use vec3::{Point3, Vec3};
+use core::{Point3, Ray, Vec3};
 
 type Color = Vec3;
 
 fn hit_sphere(center: Point3, radius: f64, r: &Ray) -> f64 {
     let oc = center - r.origin;
-    let a = Vec3::dot(r.direction, r.direction);
-    let b = -2.0 * Vec3::dot(r.direction, oc);
-    let c = Vec3::dot(oc, oc) - radius * radius;
-    let discriminant = b * b - 4.0 * a * c;
+    let a = r.direction.length_squared();
+    let h = Vec3::dot(r.direction, oc);
+    let c = oc.length_squared() - radius * radius;
+    let discriminant = h * h - a * c;
 
     if discriminant < 0.0 {
         return -1.0;
     } else {
-        // return the actual root
-        return (-b - discriminant.sqrt()) / (2.0 * a);
+        return (h - discriminant.sqrt()) / a;
     }
 }
 
