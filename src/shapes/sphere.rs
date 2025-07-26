@@ -1,5 +1,5 @@
-use crate::core::hittable::Hittable;
-use crate::core::{HitRecord, Point3, Ray, Vec3};
+use crate::core::hittable::{HitRecord, Hittable};
+use crate::core::{Point3, Ray, Vec3};
 
 pub struct Sphere {
     center: Point3,
