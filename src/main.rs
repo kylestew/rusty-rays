@@ -5,6 +5,7 @@ mod shapes;
 
 use core::hittable::{HitRecord, Hittable};
 use core::hittable_list::HittableList;
+use core::interval::Interval;
 use core::{Point3, Ray, Vec3};
 use shapes::sphere::Sphere;
 use std::f64;
@@ -13,7 +14,7 @@ type Color = Vec3;
 
 fn ray_color(ray: &Ray, world: &dyn Hittable) -> Color {
     let mut rec = HitRecord::default();
-    if world.hit(ray, 0.0, f64::INFINITY, &mut rec) {
+    if world.hit(ray, Interval::new(0.0, f64::INFINITY), &mut rec) {
         // simple normal-mapped shading
         return 0.5 * (rec.normal + Color::new(1.0, 1.0, 1.0));
     }
