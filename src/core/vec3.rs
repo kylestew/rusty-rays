@@ -37,6 +37,7 @@ impl Vec3 {
 }
 
 pub type Point3 = Vec3;
+pub type Color = Vec3;
 
 impl std::ops::Neg for Vec3 {
     type Output = Vec3;

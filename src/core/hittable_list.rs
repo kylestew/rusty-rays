@@ -12,15 +12,15 @@ impl HittableList {
         }
     }
 
-    pub fn with_object(obj: Box<dyn Hittable>) -> Self {
-        let mut list = Self::new();
-        list.add(obj);
-        list
-    }
-
-    pub fn clear(&mut self) {
-        self.objects.clear();
-    }
+    // pub fn with_object(obj: Box<dyn Hittable>) -> Self {
+    //     let mut list = Self::new();
+    //     list.add(obj);
+    //     list
+    // }
+    //
+    // pub fn clear(&mut self) {
+    //     self.objects.clear();
+    // }
 
     pub fn add(&mut self, object: Box<dyn Hittable>) {
         self.objects.push(object);
