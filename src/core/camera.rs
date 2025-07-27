@@ -1,11 +1,12 @@
 use super::hittable::{HitRecord, Hittable};
 use super::interval::Interval;
 use super::{Color, Point3, Ray, Vec3};
+use rand::Rng;
 
 pub struct Camera {
-    // pub aspect_ratio: f64,
     pub image_width: usize,
     pub image_height: usize,
+    pub samples_per_pixel: usize,
 
     center: Point3, // camera center
 
@@ -55,6 +56,7 @@ impl Camera {
             // aspect_ratio,
             image_width,
             image_height,
+            samples_per_pixel: 10,
             center,
             pixel00_loc,
             pixel_delta_u,
@@ -62,25 +64,34 @@ impl Camera {
         }
     }
 
-    pub fn render(&self, buf: &mut Vec<u32>, world: &dyn Hittable) {
-        for y in 0..self.image_height {
-            // print!("\rScanlines remaining: {} ", image_height - j);
-            for x in 0..self.image_width {
-                let pixel_center = self.pixel00_loc
-                    + (x as f64 * self.pixel_delta_u)
-                    + (y as f64 * self.pixel_delta_v);
-                let ray_direction = pixel_center - self.center;
-                let r = Ray::new(self.center, ray_direction);
-                let pixel_color = self.ray_color(&r, world);
-
-                // write color
-                let ir = (255.999 * pixel_color.x) as u32;
-                let ig = (255.999 * pixel_color.y) as u32;
-                let ib = (255.999 * pixel_color.z) as u32;
-                // writeln!(writer, "{} {} {}", ir, ig, ib)?;
-                buf[y * self.image_width + x] = (255 << 24) | (ir << 16) | (ig << 8) | ib;
-            }
+    pub fn render_pixel(&self, world: &dyn Hittable, x: usize, y: usize) -> Color {
+        let mut color = Color::new(0.0, 0.0, 0.0);
+        for _ in 0..self.samples_per_pixel {
+            let r = self.get_ray(x, y);
+            color += self.ray_color(&r, world);
         }
+        color / self.samples_per_pixel as f64
+    }
+
+    fn get_ray(&self, x: usize, y: usize) -> Ray {
+        // Construct a camera ray originating from the origin and directed at randomly sampled
+        // point around the pixel location i, j.
+
+        let offset = self.sample_square();
+        let pixel_sample = self.pixel00_loc
+            + ((x as f64 + offset.x) * self.pixel_delta_u)
+            + ((y as f64 + offset.y) * self.pixel_delta_v);
+
+        let ray_origin = self.center;
+        let ray_direction = pixel_sample - ray_origin;
+
+        Ray::new(ray_origin, ray_direction)
+    }
+
+    fn sample_square(&self) -> Vec3 {
+        let mut rng = rand::thread_rng();
+        // Returns the vector to a random point in the [-.5,-.5]-[+.5,+.5] unit square.
+        Vec3::new(rng.gen::<f64>() - 0.5, rng.gen::<f64>() - 0.5, 0.0)
     }
 
     fn ray_color(&self, ray: &Ray, world: &dyn Hittable) -> Color {

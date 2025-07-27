@@ -39,6 +39,15 @@ impl Vec3 {
 pub type Point3 = Vec3;
 pub type Color = Vec3;
 
+/// Convert linear‑RGB `Vec3` in 0‥1 to a packed BGRA `u32` for minifb.
+pub fn to_bgra_u32(c: Vec3) -> u32 {
+    let ir = (255.999 * c.x.clamp(0.0, 0.999)) as u32;
+    let ig = (255.999 * c.y.clamp(0.0, 0.999)) as u32;
+    let ib = (255.999 * c.z.clamp(0.0, 0.999)) as u32;
+
+    (255 << 24) | (ib << 16) | (ig << 8) | ir
+}
+
 impl std::ops::Neg for Vec3 {
     type Output = Vec3;
     fn neg(self) -> Vec3 {
@@ -95,5 +104,13 @@ impl std::ops::Div<f64> for Vec3 {
     type Output = Vec3;
     fn div(self, t: f64) -> Vec3 {
         self * (1.0 / t)
+    }
+}
+
+impl std::ops::AddAssign for Vec3 {
+    fn add_assign(&mut self, t: Self) {
+        self.x += t.x;
+        self.y += t.y;
+        self.z += t.z;
     }
 }
