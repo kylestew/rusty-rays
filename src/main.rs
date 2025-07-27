@@ -7,7 +7,6 @@ mod shapes;
 
 use core::camera::Camera;
 use core::hittable_list::HittableList;
-use core::vec3::to_bgra_u32;
 use core::Point3;
 use shapes::sphere::Sphere;
 
@@ -19,7 +18,8 @@ fn main() -> Result<(), std::io::Error> {
 
     // Camera
     let mut camera = Camera::default(800, 16.0 / 9.0);
-    camera.samples_per_pixel = 10;
+    camera.samples_per_pixel = 100;
+    camera.max_depth = 10;
 
     // Display Window
     let mut window = Window::new(
@@ -37,7 +37,7 @@ fn main() -> Result<(), std::io::Error> {
     for y in 0..camera.image_height {
         for x in 0..camera.image_width {
             let c = camera.render_pixel(&world, x, y);
-            buffer[y * camera.image_width + x] = to_bgra_u32(c);
+            buffer[y * camera.image_width + x] = c.to_rgb_u32();
         }
 
         window

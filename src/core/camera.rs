@@ -6,7 +6,9 @@ use rand::Rng;
 pub struct Camera {
     pub image_width: usize,
     pub image_height: usize,
+
     pub samples_per_pixel: usize,
+    pub max_depth: usize,
 
     center: Point3, // camera center
 
@@ -56,7 +58,10 @@ impl Camera {
             // aspect_ratio,
             image_width,
             image_height,
+
             samples_per_pixel: 10,
+            max_depth: 10,
+
             center,
             pixel00_loc,
             pixel_delta_u,
@@ -68,7 +73,7 @@ impl Camera {
         let mut color = Color::new(0.0, 0.0, 0.0);
         for _ in 0..self.samples_per_pixel {
             let r = self.get_ray(x, y);
-            color += self.ray_color(&r, world);
+            color += self.ray_color(&r, self.max_depth, world);
         }
         color / self.samples_per_pixel as f64
     }
@@ -94,11 +99,20 @@ impl Camera {
         Vec3::new(rng.gen::<f64>() - 0.5, rng.gen::<f64>() - 0.5, 0.0)
     }
 
-    fn ray_color(&self, ray: &Ray, world: &dyn Hittable) -> Color {
+    fn ray_color(&self, ray: &Ray, depth: usize, world: &dyn Hittable) -> Color {
+        // we've exceeded the ray bounce limit, no more light is gathered
+        if depth <= 0 {
+            return Color::new(0.0, 0.0, 0.0);
+        }
+
         let mut rec = HitRecord::default();
-        if world.hit(ray, Interval::new(0.0, f64::INFINITY), &mut rec) {
-            // simple normal-mapped shading
-            return 0.5 * (rec.normal + Color::new(1.0, 1.0, 1.0));
+        if world.hit(ray, Interval::new(0.001, f64::INFINITY), &mut rec) {
+            // let direction = Vec3::random_on_hemisphere(rec.normal);
+            let direction = rec.normal + Vec3::random_unit_vector();
+
+            // one bounce (adds 50% color)
+            let bounce_ray = Ray::new(rec.p, direction);
+            return 0.5 * self.ray_color(&bounce_ray, depth - 1, world);
         }
 
         let unit_dir = Vec3::unit_vector(ray.direction);

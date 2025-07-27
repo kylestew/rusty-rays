@@ -1,3 +1,5 @@
+use rand::Rng;
+
 #[derive(Default, Debug, Clone, Copy)]
 pub struct Vec3 {
     pub x: f64,
@@ -39,13 +41,32 @@ impl Vec3 {
 pub type Point3 = Vec3;
 pub type Color = Vec3;
 
-/// Convert linear‑RGB `Vec3` in 0‥1 to a packed BGRA `u32` for minifb.
-pub fn to_bgra_u32(c: Vec3) -> u32 {
-    let ir = (255.999 * c.x.clamp(0.0, 0.999)) as u32;
-    let ig = (255.999 * c.y.clamp(0.0, 0.999)) as u32;
-    let ib = (255.999 * c.z.clamp(0.0, 0.999)) as u32;
+#[inline]
+fn linear_to_gamma(v: f64) -> f64 {
+    if v > 0.0 {
+        v.sqrt()
+    } else {
+        0.0
+    }
+}
 
-    (255 << 24) | (ib << 16) | (ig << 8) | ir
+impl Vec3 {
+    /// Convert linear‑RGB Vec3 (0‥1) -> 0x00RRGGBB for minifb
+    pub fn to_rgb_u32(&self) -> u32 {
+        // linear -> gamma-2
+        let (r, g, b) = (
+            linear_to_gamma(self.x),
+            linear_to_gamma(self.y),
+            linear_to_gamma(self.z),
+        );
+
+        let ir = (255.999 * r.clamp(0.0, 0.999)) as u32;
+        let ig = (255.999 * g.clamp(0.0, 0.999)) as u32;
+        let ib = (255.999 * b.clamp(0.0, 0.999)) as u32;
+
+        // pack as 0x00RRGGBB  (minifb ignores the top byte on all platforms)
+        (ir << 16) | (ig << 8) | ib
+    }
 }
 
 impl std::ops::Neg for Vec3 {
@@ -112,5 +133,35 @@ impl std::ops::AddAssign for Vec3 {
         self.x += t.x;
         self.y += t.y;
         self.z += t.z;
+    }
+}
+
+impl Vec3 {
+    pub fn random_in_range(min: f64, max: f64) -> Self {
+        let mut rng = rand::thread_rng();
+        Vec3 {
+            x: rng.gen_range(min..=max),
+            y: rng.gen_range(min..=max),
+            z: rng.gen_range(min..=max),
+        }
+    }
+
+    pub fn random_unit_vector() -> Self {
+        loop {
+            let p = Vec3::random_in_range(-1.0, 1.0);
+            let lensq = p.length_squared();
+            if lensq > 1e-160 && lensq <= 1.0 {
+                return p / lensq.sqrt();
+            }
+        }
+    }
+
+    pub fn random_on_hemisphere(normal: Vec3) -> Vec3 {
+        let on_unit_sphere = Vec3::random_unit_vector();
+        if Vec3::dot(on_unit_sphere, normal) > 0.0 {
+            on_unit_sphere
+        } else {
+            -on_unit_sphere
+        }
     }
 }

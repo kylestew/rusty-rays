@@ -5,7 +5,6 @@ mod shapes;
 
 use core::camera::Camera;
 use core::hittable_list::HittableList;
-use core::vec3::to_bgra_u32;
 use core::Point3;
 use shapes::sphere::Sphere;
 
@@ -32,7 +31,7 @@ impl RustyRays {
     #[wasm_bindgen]
     pub fn trace_pixel(&self, x: usize, y: usize) -> u32 {
         let c = self.camera.render_pixel(&self.world, x, y);
-        to_bgra_u32(c)
+        c.to_rgb_u32()
     }
 
     #[wasm_bindgen(getter)]
