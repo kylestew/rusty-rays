@@ -81,7 +81,6 @@ impl Camera {
     fn get_ray(&self, x: usize, y: usize) -> Ray {
         // Construct a camera ray originating from the origin and directed at randomly sampled
         // point around the pixel location i, j.
-
         let offset = self.sample_square();
         let pixel_sample = self.pixel00_loc
             + ((x as f64 + offset.x) * self.pixel_delta_u)
@@ -105,14 +104,21 @@ impl Camera {
             return Color::new(0.0, 0.0, 0.0);
         }
 
-        let mut rec = HitRecord::default();
-        if world.hit(ray, Interval::new(0.001, f64::INFINITY), &mut rec) {
-            // let direction = Vec3::random_on_hemisphere(rec.normal);
-            let direction = rec.normal + Vec3::random_unit_vector();
+        // shoot a ray into the world, see if we hit anything
+        if let Some(hit_rec) = world.hit(ray, Interval::new(0.001, f64::INFINITY)) {
+            // hit an object in the world
+            // use it's material to determine ray bounce behavior
+            let mut scattered = Ray::default();
+            let mut attenuation = Color::default();
 
-            // one bounce (adds 50% color)
-            let bounce_ray = Ray::new(rec.p, direction);
-            return 0.5 * self.ray_color(&bounce_ray, depth - 1, world);
+            if hit_rec
+                .mat
+                .scatter(ray, &hit_rec, &mut attenuation, &mut scattered)
+            {
+                return attenuation * self.ray_color(&scattered, depth - 1, world);
+            }
+
+            Color::default();
         }
 
         let unit_dir = Vec3::unit_vector(ray.direction);

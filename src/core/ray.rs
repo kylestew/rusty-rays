@@ -1,6 +1,6 @@
 use super::vec3::{Point3, Vec3};
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Default, Debug, Clone, Copy)]
 pub struct Ray {
     pub origin: Point3,
     pub direction: Vec3,

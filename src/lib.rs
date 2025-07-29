@@ -18,8 +18,9 @@ pub struct RustyRays {
 impl RustyRays {
     pub fn new(width: usize, aspect: f64, samples: usize) -> RustyRays {
         let mut world = HittableList::new();
-        world.add(Box::new(Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5)));
-        world.add(Box::new(Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0)));
+        panic!("Build a world");
+        // world.add(Box::new(Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5)));
+        // world.add(Box::new(Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0)));
 
         let mut camera = Camera::default(width, aspect);
         camera.samples_per_pixel = samples;

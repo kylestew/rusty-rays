@@ -1,23 +1,27 @@
 use crate::core::hittable::{HitRecord, Hittable};
 use crate::core::interval::Interval;
+use crate::core::material::Material;
 use crate::core::{Point3, Ray, Vec3};
+use std::rc::Rc;
 
 pub struct Sphere {
     center: Point3,
     radius: f64,
+    mat: Rc<dyn Material>,
 }
 
 impl Sphere {
-    pub fn new(center: Point3, radius: f64) -> Self {
+    pub fn new(center: Point3, radius: f64, mat: Rc<dyn Material>) -> Self {
         Self {
             center,
             radius: radius.max(0.0),
+            mat,
         }
     }
 }
 
 impl Hittable for Sphere {
-    fn hit(&self, r: &Ray, ray_t: Interval, rec: &mut HitRecord) -> bool {
+    fn hit(&self, r: &Ray, ray_t: Interval) -> Option<HitRecord> {
         let oc = self.center - r.origin;
         let a = r.direction.length_squared();
         let h = Vec3::dot(r.direction, oc);
@@ -25,7 +29,7 @@ impl Hittable for Sphere {
 
         let discriminant = h * h - a * c;
         if discriminant < 0.0 {
-            return false;
+            return None;
         }
 
         // find the nearest root that lies in the acceptable range
@@ -34,15 +38,16 @@ impl Hittable for Sphere {
         if !ray_t.surrounds(root) {
             root = (h + sqrtd) / a;
             if !ray_t.surrounds(root) {
-                return false;
+                return None;
             }
         }
 
-        rec.t = root;
-        rec.p = r.at(root);
-        let outward_normal = (rec.p - self.center) / self.radius;
-        rec.set_face_normal(r, &outward_normal);
+        let hit_p = r.at(root);
+        let hit_t = root;
+        let ray_d = r.direction;
+        let outward_normal = (hit_p - self.center) / self.radius;
+        let mat = Rc::clone(&self.mat);
 
-        true
+        Some(HitRecord::new(hit_p, hit_t, ray_d, outward_normal, mat))
     }
 }

@@ -21,6 +21,11 @@ impl Vec3 {
         self.x * self.x + self.y * self.y + self.z * self.z
     }
 
+    pub fn near_zero(&self) -> bool {
+        let s = 1e-8;
+        self.x.abs() < s && self.y.abs() < s && self.z.abs() < s
+    }
+
     pub fn dot(u: Vec3, v: Vec3) -> f64 {
         u.x * v.x + u.y * v.y + u.z * v.z
     }
@@ -35,6 +40,10 @@ impl Vec3 {
 
     pub fn unit_vector(v: Vec3) -> Vec3 {
         v / v.length()
+    }
+
+    pub fn reflect(v: Vec3, n: Vec3) -> Vec3 {
+        v - 2.0 * Self::dot(v, n) * n
     }
 }
 
@@ -103,6 +112,18 @@ impl std::ops::Sub for Vec3 {
     }
 }
 
+impl std::ops::Mul for Vec3 {
+    type Output = Vec3;
+
+    fn mul(self, other: Vec3) -> Vec3 {
+        Vec3 {
+            x: self.x * other.x,
+            y: self.y * other.y,
+            z: self.z * other.z,
+        }
+    }
+}
+
 impl std::ops::Mul<f64> for Vec3 {
     type Output = Vec3;
     fn mul(self, t: f64) -> Vec3 {
@@ -136,6 +157,7 @@ impl std::ops::AddAssign for Vec3 {
     }
 }
 
+// RANDOM helpers
 impl Vec3 {
     pub fn random_in_range(min: f64, max: f64) -> Self {
         let mut rng = rand::thread_rng();

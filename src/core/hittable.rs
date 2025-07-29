@@ -1,29 +1,41 @@
 use super::interval::Interval;
+use super::material::Material;
 use super::ray::Ray;
 use super::vec3::{Point3, Vec3};
+use std::rc::Rc;
 
 pub trait Hittable {
-    fn hit(&self, r: &Ray, ray_t: Interval, rec: &mut HitRecord) -> bool;
+    fn hit(&self, r: &Ray, ray_t: Interval) -> Option<HitRecord>;
 }
 
-#[derive(Default, Debug, Clone, Copy)]
 pub struct HitRecord {
     pub p: Point3,
     pub normal: Vec3,
+    pub mat: Rc<dyn Material>,
     pub t: f64,
     pub front_face: bool,
 }
 
 impl HitRecord {
-    pub fn set_face_normal(&mut self, r: &Ray, outward_normal: &Vec3) {
-        // Sets the hit record normal vector
-        // NOTE: the parameter `outward_normal` is assumed ot have unit length
-
-        self.front_face = Vec3::dot(r.direction, *outward_normal) < 0.0;
-        self.normal = if self.front_face {
-            *outward_normal
+    pub fn new(
+        hit_p: Point3,
+        hit_t: f64,
+        ray_d: Vec3,
+        outward_normal: Vec3,
+        mat: Rc<dyn Material>,
+    ) -> Self {
+        let front_face = Vec3::dot(ray_d, outward_normal) < 0.0;
+        let normal = if front_face {
+            outward_normal
         } else {
-            -*outward_normal
+            -outward_normal
         };
+        Self {
+            p: hit_p,
+            normal,
+            mat,
+            t: hit_t,
+            front_face,
+        }
     }
 }

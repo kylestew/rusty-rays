@@ -1,24 +1,57 @@
 #![cfg(not(target_arch = "wasm32"))]
 
 use minifb::{Key, Window, WindowOptions};
+use std::rc::Rc;
 
 mod core;
 mod shapes;
 
 use core::camera::Camera;
 use core::hittable_list::HittableList;
-use core::Point3;
+use core::material::{Lambertian, Metal};
+use core::{Color, Point3};
 use shapes::sphere::Sphere;
 
 fn main() -> Result<(), std::io::Error> {
     // World
+    let mat_ground = Lambertian {
+        albedo: Color::new(0.8, 0.8, 0.0),
+    };
+    let mat_center = Lambertian {
+        albedo: Color::new(0.1, 0.2, 0.5),
+    };
+    let mat_left = Metal {
+        albedo: Color::new(0.8, 0.8, 0.8),
+    };
+    let mat_right = Metal {
+        albedo: Color::new(0.8, 0.6, 0.2),
+    };
+
     let mut world = HittableList::new();
-    world.add(Box::new(Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5)));
-    world.add(Box::new(Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0)));
+    world.add(Box::new(Sphere::new(
+        Point3::new(0.0, -100.5, -1.0),
+        100.0,
+        Rc::new(mat_ground),
+    )));
+    world.add(Box::new(Sphere::new(
+        Point3::new(0.0, 0.0, -1.2),
+        0.5,
+        Rc::new(mat_center),
+    )));
+    world.add(Box::new(Sphere::new(
+        Point3::new(-1.0, 0.0, -1.0),
+        0.5,
+        Rc::new(mat_left),
+    )));
+    world.add(Box::new(Sphere::new(
+        Point3::new(1.0, 0.0, -1.0),
+        0.5,
+        Rc::new(mat_right),
+    )));
 
     // Camera
     let mut camera = Camera::default(800, 16.0 / 9.0);
-    camera.samples_per_pixel = 100;
+    camera.samples_per_pixel = 40;
     camera.max_depth = 10;
 
     // Display Window
