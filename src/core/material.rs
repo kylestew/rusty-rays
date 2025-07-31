@@ -1,14 +1,13 @@
 use super::{Color, HitRecord, Ray, Vec3};
 use rand::Rng;
 
+pub struct MatBounce {
+    pub attenuation: Color,
+    pub scattered: Ray,
+}
+
 pub trait Material {
-    fn scatter(
-        &self,
-        r_in: &Ray,
-        rec: &HitRecord,
-        attenuation: &mut Color,
-        scattered: &mut Ray,
-    ) -> bool;
+    fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<MatBounce>;
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -17,13 +16,7 @@ pub struct Lambertian {
 }
 
 impl Material for Lambertian {
-    fn scatter(
-        &self,
-        _r_in: &Ray,
-        rec: &HitRecord,
-        attenuation: &mut Color,
-        scattered: &mut Ray,
-    ) -> bool {
+    fn scatter(&self, _r_in: &Ray, rec: &HitRecord) -> Option<MatBounce> {
         // Cosine‑weighted random bounce
         let mut scatter_direction = rec.normal + Vec3::random_unit_vector();
 
@@ -33,12 +26,15 @@ impl Material for Lambertian {
         }
 
         // Build the new ray
-        *scattered = Ray::new(rec.p, scatter_direction);
+        let scattered = Ray::new(rec.p, scatter_direction);
 
         // Set the attenuation colour
-        *attenuation = self.albedo; // copies
+        let attenuation = self.albedo; // copies
 
-        true
+        Some(MatBounce {
+            attenuation,
+            scattered,
+        })
     }
 }
 
@@ -56,20 +52,21 @@ impl Metal {
 }
 
 impl Material for Metal {
-    fn scatter(
-        &self,
-        r_in: &Ray,
-        rec: &HitRecord,
-        attenuation: &mut Color,
-        scattered: &mut Ray,
-    ) -> bool {
+    fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<MatBounce> {
         let mut reflected = Vec3::reflect(r_in.direction, rec.normal);
         reflected = Vec3::unit_vector(reflected) + (self.fuzz * Vec3::random_unit_vector());
 
-        *scattered = Ray::new(rec.p, reflected);
-        *attenuation = self.albedo;
+        let scattered = Ray::new(rec.p, reflected);
+        let attenuation = self.albedo;
 
-        Vec3::dot(scattered.direction, rec.normal) > 0.0
+        if Vec3::dot(scattered.direction, rec.normal) > 0.0 {
+            Some(MatBounce {
+                attenuation,
+                scattered,
+            })
+        } else {
+            None
+        }
     }
 }
 
@@ -92,14 +89,8 @@ impl Dielectric {
 }
 
 impl Material for Dielectric {
-    fn scatter(
-        &self,
-        r_in: &Ray,
-        rec: &HitRecord,
-        attenuation: &mut Color,
-        scattered: &mut Ray,
-    ) -> bool {
-        *attenuation = Color::new(1.0, 1.0, 1.0);
+    fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<MatBounce> {
+        let attenuation = Color::new(1.0, 1.0, 1.0);
         let ri = if rec.front_face {
             1.0 / self.refraction_index
         } else {
@@ -111,12 +102,16 @@ impl Material for Dielectric {
         let sin_theta = (1.0 - cos_theta * cos_theta).sqrt();
 
         let cannot_refract = ri * sin_theta > 1.0;
+        let scattered;
         if cannot_refract || Dielectric::reflectance(cos_theta, ri) > rand::thread_rng().gen() {
-            *scattered = Ray::new(rec.p, Vec3::reflect(unit_direction, rec.normal));
+            scattered = Ray::new(rec.p, Vec3::reflect(unit_direction, rec.normal));
         } else {
-            *scattered = Ray::new(rec.p, Vec3::refract(unit_direction, rec.normal, ri));
+            scattered = Ray::new(rec.p, Vec3::refract(unit_direction, rec.normal, ri));
         }
 
-        true
+        Some(MatBounce {
+            attenuation,
+            scattered,
+        })
     }
 }

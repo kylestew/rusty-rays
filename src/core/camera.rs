@@ -108,14 +108,8 @@ impl Camera {
         if let Some(hit_rec) = world.hit(ray, Interval::new(0.001, f64::INFINITY)) {
             // hit an object in the world
             // use it's material to determine ray bounce behavior
-            let mut scattered = Ray::default();
-            let mut attenuation = Color::default();
-
-            if hit_rec
-                .mat
-                .scatter(ray, &hit_rec, &mut attenuation, &mut scattered)
-            {
-                return attenuation * self.ray_color(&scattered, depth - 1, world);
+            if let Some(bounce) = hit_rec.mat.scatter(ray, &hit_rec) {
+                return bounce.attenuation * self.ray_color(&bounce.scattered, depth - 1, world);
             }
 
             Color::default();
