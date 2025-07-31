@@ -8,7 +8,7 @@ mod shapes;
 
 use core::camera::Camera;
 use core::hittable_list::HittableList;
-use core::material::{Lambertian, Metal};
+use core::material::{Dielectric, Lambertian, Metal};
 use core::{Color, Point3};
 use shapes::sphere::Sphere;
 
@@ -20,7 +20,8 @@ fn main() -> Result<(), std::io::Error> {
     let mat_center = Lambertian {
         albedo: Color::new(0.1, 0.2, 0.5),
     };
-    let mat_left = Metal::new(Color::new(0.8, 0.8, 0.8), 0.3);
+    let mat_left = Dielectric::new(1.50);
+    let mat_bubble = Dielectric::new(1.0 / 1.50);
     let mat_right = Metal::new(Color::new(0.8, 0.6, 0.2), 1.0);
 
     let mut world = HittableList::new();
@@ -38,6 +39,11 @@ fn main() -> Result<(), std::io::Error> {
         Point3::new(-1.0, 0.0, -1.0),
         0.5,
         Rc::new(mat_left),
+    )));
+    world.add(Box::new(Sphere::new(
+        Point3::new(-1.0, 0.0, -1.0),
+        0.4,
+        Rc::new(mat_bubble),
     )));
     world.add(Box::new(Sphere::new(
         Point3::new(1.0, 0.0, -1.0),
