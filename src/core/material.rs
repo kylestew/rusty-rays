@@ -1,5 +1,5 @@
 use super::{Color, HitRecord, Ray};
-use crate::materials::lambertian::Lambertian;
+use crate::materials::{dielectric::Dielectric, lambertian::Lambertian, metal::Metal};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 
@@ -7,14 +7,18 @@ use std::sync::Arc;
 #[serde(tag = "type", rename_all = "lowercase")]
 pub enum MaterialDef {
     Lambertian { albedo: Color },
-    // Metal { albedo: Color, fuxx: f64 }
-    // ....
+    Metal { albedo: Color, fuzz: f64 },
+    Dielectric { ir: f64 }, // ....
 }
 
 impl MaterialDef {
     pub fn into_material(self) -> Arc<dyn Material> {
         match self {
             MaterialDef::Lambertian { albedo } => Arc::new(Lambertian { albedo }),
+            MaterialDef::Metal { albedo, fuzz } => Arc::new(Metal { albedo, fuzz }),
+            MaterialDef::Dielectric { ir } => Arc::new(Dielectric {
+                refraction_index: ir,
+            }),
         }
     }
 }

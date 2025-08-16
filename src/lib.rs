@@ -1,29 +1,22 @@
-use wasm_bindgen::prelude::*;
-
+/*
 mod core;
 mod shapes;
 
-use core::camera::Camera;
-use core::hittable_list::HittableList;
-use core::Point3;
-use shapes::sphere::Sphere;
+#[cfg(target_arch = "wasm32")]
+use wasm_bindgen::prelude::*;
 
+#[cfg(target_arch = "wasm32")]
 #[wasm_bindgen]
 pub struct RustyRays {
     camera: Camera,
     world: HittableList,
 }
 
+#[cfg(target_arch = "wasm32")]
 #[wasm_bindgen]
 impl RustyRays {
-    pub fn new(width: usize, aspect: f64, samples: usize) -> RustyRays {
+    pub fn new(from: JSON) -> RustyRays {
         let mut world = HittableList::new();
-        panic!("Build a world");
-        // world.add(Box::new(Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5)));
-        // world.add(Box::new(Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0)));
-
-        let mut camera = Camera::default(width, aspect);
-        camera.samples_per_pixel = samples;
 
         RustyRays { camera, world }
     }
@@ -45,3 +38,4 @@ impl RustyRays {
         self.camera.image_height
     }
 }
+*/

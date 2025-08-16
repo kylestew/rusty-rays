@@ -1,25 +1,28 @@
 use crate::core::camera::Camera;
 use crate::core::hittable::Hittable;
+use crate::core::hittable_list::HittableList;
 use crate::core::shape::ShapeDef;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
-struct SceneDef {
+pub struct SceneDef {
     camera: Camera,
     objects: Vec<ShapeDef>,
 }
 
-struct Scene {
-    camera: Camera,
-    world: Vec<Box<dyn Hittable>>,
+pub struct Scene {
+    pub camera: Camera,
+    pub world: HittableList,
 }
 
 impl SceneDef {
     pub fn build(self) -> Scene {
-        let mut world: Vec<Box<dyn Hittable>> = Vec::with_capacity(self.objects.len());
+        let mut objects: Vec<Box<dyn Hittable>> = Vec::with_capacity(self.objects.len());
         for s in self.objects {
-            world.push(s.into_hittable());
+            objects.push(s.into_hittable());
         }
+
+        let world = HittableList { objects: objects };
 
         Scene {
             camera: self.camera,
@@ -106,6 +109,7 @@ mod tests {
                     MaterialDef::Lambertian { albedo } => {
                         assert_vec3(albedo, 0.8, 0.8, 0.0);
                     }
+                    _ => panic!(),
                 }
             }
             _ => panic!("expected first object to be a sphere"),
@@ -124,6 +128,7 @@ mod tests {
                     MaterialDef::Lambertian { albedo } => {
                         assert_vec3(albedo, 0.1, 0.2, 0.5);
                     }
+                    _ => panic!(),
                 }
             }
             _ => panic!("expected second object to be a sphere"),
