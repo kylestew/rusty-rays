@@ -2,7 +2,7 @@ use super::interval::Interval;
 use super::material::Material;
 use super::ray::Ray;
 use super::vec3::{Point3, Vec3};
-use std::rc::Rc;
+use std::sync::Arc;
 
 pub trait Hittable {
     fn hit(&self, r: &Ray, ray_t: Interval) -> Option<HitRecord>;
@@ -11,7 +11,7 @@ pub trait Hittable {
 pub struct HitRecord {
     pub p: Point3,
     pub normal: Vec3,
-    pub mat: Rc<dyn Material>,
+    pub mat: Arc<dyn Material>,
     pub t: f64,
     pub front_face: bool,
 }
@@ -22,7 +22,7 @@ impl HitRecord {
         hit_t: f64,
         ray_d: Vec3,
         outward_normal: Vec3,
-        mat: Rc<dyn Material>,
+        mat: Arc<dyn Material>,
     ) -> Self {
         let front_face = Vec3::dot(ray_d, outward_normal) < 0.0;
         let normal = if front_face {
