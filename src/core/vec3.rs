@@ -170,11 +170,11 @@ impl std::ops::AddAssign for Vec3 {
 // RANDOM helpers
 impl Vec3 {
     pub fn random_in_range(min: f64, max: f64) -> Self {
-        let mut rng = rand::thread_rng();
+        let mut rng = rand::rng();
         Vec3 {
-            x: rng.gen_range(min..=max),
-            y: rng.gen_range(min..=max),
-            z: rng.gen_range(min..=max),
+            x: rng.random_range(min..=max),
+            y: rng.random_range(min..=max),
+            z: rng.random_range(min..=max),
         }
     }
 

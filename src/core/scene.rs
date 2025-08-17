@@ -5,6 +5,7 @@ use crate::core::shape::ShapeDef;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct SceneDef {
     camera: CameraDef,
     objects: Vec<ShapeDef>,

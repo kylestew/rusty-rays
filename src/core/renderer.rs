@@ -1,7 +1,7 @@
 use crate::core::camera::Camera;
 use crate::core::hittable::Hittable;
 use crate::core::interval::Interval;
-use crate::core::{Color, Point3, Ray, Vec3};
+use crate::core::{Color, Ray, Vec3};
 use rand::Rng;
 
 #[derive(Debug)]
@@ -45,9 +45,9 @@ impl Renderer {
     }
 
     fn sample_square(&self) -> Vec3 {
-        let mut rng = rand::thread_rng();
+        let mut rng = rand::rng();
         // Returns the vector to a random point in the [-.5,-.5]-[+.5,+.5] unit square.
-        Vec3::new(rng.gen::<f64>() - 0.5, rng.gen::<f64>() - 0.5, 0.0)
+        Vec3::new(rng.random::<f64>() - 0.5, rng.random::<f64>() - 0.5, 0.0)
     }
 
     fn ray_color(&self, ray: &Ray, depth: usize, world: &dyn Hittable) -> Color {

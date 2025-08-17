@@ -35,7 +35,7 @@ impl Material for Dielectric {
 
         let cannot_refract = ri * sin_theta > 1.0;
         let scattered;
-        if cannot_refract || Dielectric::reflectance(cos_theta, ri) > rand::thread_rng().gen() {
+        if cannot_refract || Dielectric::reflectance(cos_theta, ri) > rand::rng().random() {
             scattered = Ray::new(rec.p, Vec3::reflect(unit_direction, rec.normal));
         } else {
             scattered = Ray::new(rec.p, Vec3::refract(unit_direction, rec.normal, ri));
