@@ -4,7 +4,7 @@ use super::ray::Ray;
 use super::vec3::{Point3, Vec3};
 use std::sync::Arc;
 
-pub trait Hittable {
+pub trait Hittable: Send + Sync {
     fn hit(&self, r: &Ray, ray_t: Interval) -> Option<HitRecord>;
 }
 

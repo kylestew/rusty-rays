@@ -7,7 +7,9 @@ mod shapes;
 use crate::core::renderer::Renderer;
 use crate::core::scene::SceneDef;
 use minifb::{Key, Window, WindowOptions};
+use rayon::prelude::*;
 use std::fs::File;
+use std::sync::Arc;
 
 fn main() -> Result<(), std::io::Error> {
     // build the scene
@@ -30,27 +32,45 @@ fn main() -> Result<(), std::io::Error> {
     // Allocate a BGRA-encoded frame buffer
     let mut buffer = vec![0u32; renderer.image_width * renderer.image_height];
 
-    // render pixel by pixel, flushing buffer to display as we go
-    for y in 0..renderer.image_height {
-        for x in 0..renderer.image_width {
-            let c = renderer.render_pixel(&scene.world, x, y);
-            buffer[y * renderer.image_width + x] = c.to_rgb_u32();
-        }
+    // Share immutable world across threads
+    let world = Arc::new(scene.world);
 
+    // === PARALLEL RENDER =====================================================
+    buffer
+        .par_chunks_mut(renderer.image_width) // each chunk = one scanline
+        .enumerate()
+        .for_each(|(y, row)| {
+            for x in 0..renderer.image_width {
+                let c = renderer.render_pixel(world.as_ref(), x, y);
+                row[x] = c.to_rgb_u32();
+            }
+            println!("{}", y);
+        });
+    // =========================================================================
+
+    // // render pixel by pixel, flushing buffer to display as we go
+    // for y in 0..renderer.image_height {
+    //     for x in 0..renderer.image_width {
+    //         let c = renderer.render_pixel(&scene.world, x, y);
+    //         buffer[y * renderer.image_width + x] = c.to_rgb_u32();
+    //     }
+    //
+    //     window
+    //         .update_with_buffer(&buffer, renderer.image_width, renderer.image_height)
+    //         .unwrap();
+    //
+    //     // give the window a chance to process events each scan‑line
+    //     if !window.is_open() || window.is_key_down(Key::Escape) {
+    //         return Ok(());
+    //     }
+    // }
+
+    // RENDERING COMPLETE!
+    // keep window open and present the final frame each tick until user quits
+    while window.is_open() && !window.is_key_down(Key::Escape) {
         window
             .update_with_buffer(&buffer, renderer.image_width, renderer.image_height)
             .unwrap();
-
-        // give the window a chance to process events each scan‑line
-        if !window.is_open() || window.is_key_down(Key::Escape) {
-            return Ok(());
-        }
-    }
-
-    // RENDERING COMPLETE!
-    // keep window open until user quits
-    while window.is_open() && !window.is_key_down(Key::Escape) {
-        window.update();
     }
 
     Ok(())
