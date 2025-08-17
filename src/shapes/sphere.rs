@@ -34,7 +34,7 @@ impl Hittable for Sphere {
 
         // find the nearest root that lies in the acceptable range
         let sqrtd = discriminant.sqrt();
-        let mut root = (h - discriminant.sqrt()) / a;
+        let mut root = (h - sqrtd) / a;
         if !ray_t.surrounds(root) {
             root = (h + sqrtd) / a;
             if !ray_t.surrounds(root) {

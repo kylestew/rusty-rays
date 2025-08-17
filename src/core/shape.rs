@@ -5,7 +5,7 @@ use crate::shapes::sphere::Sphere;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
-#[serde(tag = "type", rename_all = "lowercase")]
+#[serde(tag = "type", rename_all = "lowercase", deny_unknown_fields)]
 pub enum ShapeDef {
     Sphere {
         center: Point3,

@@ -5,7 +5,7 @@
         "fov": 40.0,
         "samples_per_pixel": 100,
         "max_depth": 50,
-        "image_width": 800,
+        "image_width": 400,
         "aspect_ratio": 1.7777777778
     },
     "objects": [

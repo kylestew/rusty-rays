@@ -1,4 +1,4 @@
-use crate::core::camera::Camera;
+use crate::core::camera::{Camera, CameraDef};
 use crate::core::hittable::Hittable;
 use crate::core::hittable_list::HittableList;
 use crate::core::shape::ShapeDef;
@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SceneDef {
-    camera: Camera,
+    camera: CameraDef,
     objects: Vec<ShapeDef>,
 }
 
@@ -17,15 +17,16 @@ pub struct Scene {
 
 impl SceneDef {
     pub fn build(self) -> Scene {
-        let mut objects: Vec<Box<dyn Hittable>> = Vec::with_capacity(self.objects.len());
-        for s in self.objects {
-            objects.push(s.into_hittable());
-        }
+        let objects: Vec<Box<dyn Hittable>> = self
+            .objects
+            .into_iter()
+            .map(ShapeDef::into_hittable)
+            .collect();
 
-        let world = HittableList { objects: objects };
+        let world = HittableList { objects };
 
         Scene {
-            camera: self.camera,
+            camera: self.camera.to_camera(),
             world,
         }
     }

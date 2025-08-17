@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 
 #[derive(Deserialize, Serialize, Debug)]
-#[serde(tag = "type", rename_all = "lowercase")]
+#[serde(tag = "type", rename_all = "lowercase", deny_unknown_fields)]
 pub enum MaterialDef {
     Lambertian { albedo: Color },
     Metal { albedo: Color, fuzz: f64 },
@@ -15,10 +15,8 @@ impl MaterialDef {
     pub fn into_material(self) -> Arc<dyn Material> {
         match self {
             MaterialDef::Lambertian { albedo } => Arc::new(Lambertian { albedo }),
-            MaterialDef::Metal { albedo, fuzz } => Arc::new(Metal { albedo, fuzz }),
-            MaterialDef::Dielectric { ir } => Arc::new(Dielectric {
-                refraction_index: ir,
-            }),
+            MaterialDef::Metal { albedo, fuzz } => Arc::new(Metal::new(albedo, fuzz)),
+            MaterialDef::Dielectric { ir } => Arc::new(Dielectric::new(ir)),
         }
     }
 }
