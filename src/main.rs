@@ -3,22 +3,22 @@
 mod core;
 mod materials;
 mod primitives;
+mod scenes;
 
 use crate::core::math::vec_to_rgb_u32;
 use crate::core::renderer::Renderer;
-use crate::core::scene::SceneDef;
+// use crate::core::scene::SceneDef;
 
 use minifb::{Key, Window, WindowOptions};
-use rand::{thread_rng, RngCore};
-use rayon::prelude::*;
-use std::fs::File;
-use std::sync::Arc;
+// rand::RngCore trait is pulled in via type of &mut rng at callsite
 
 fn main() -> Result<(), std::io::Error> {
-    // build the scene
-    let file = File::open("scene.json")?;
-    let def: SceneDef = serde_json::from_reader(file)?;
-    let scene = def.build();
+    // // build the scene
+    // let file = File::open("scene.json")?;
+    // let def: SceneDef = serde_json::from_reader(file)?;
+    // let scene = def.build();
+    // build the scene (hand-built random spheres)
+    let scene = scenes::random_world();
 
     // create a renderer
     let renderer = Renderer::from_camera(&scene.camera);
@@ -51,7 +51,7 @@ fn main() -> Result<(), std::io::Error> {
     //     });
     // // =========================================================================
 
-    let mut rng = thread_rng();
+    let mut rng = rand::rng();
 
     // render pixel by pixel, flushing buffer to display as we go
     for y in 0..renderer.image_height {
