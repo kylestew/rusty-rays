@@ -27,6 +27,17 @@ pub fn random_unit_vector(rng: &mut dyn RngCore) -> Vec3 {
     Vec3::new(r * a.cos(), r * a.sin(), z)
 }
 
+pub fn random_in_unit_disk(rng: &mut dyn RngCore) -> Vec3 {
+    loop {
+        let x = 2.0 * f32_01(rng) - 1.0;
+        let y = 2.0 * f32_01(rng) - 1.0;
+        let p = Vec3::new(x, y, 0.0);
+        if p.length_squared() < 1.0 {
+            return p;
+        }
+    }
+}
+
 #[inline]
 fn linear_to_gamma(v: f32) -> f32 {
     if v > 0.0 {

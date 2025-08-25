@@ -4,7 +4,7 @@ use crate::core::interval::Interval;
 use crate::core::math::f32_01;
 use crate::core::ray::Ray;
 use glam::Vec3;
-use rand::{rng, RngCore};
+use rand::RngCore;
 
 #[derive(Debug)]
 pub struct Renderer {
@@ -46,10 +46,11 @@ impl Renderer {
         color / self.samples_per_pixel as f32
     }
 
-    fn get_ray(&self, x: usize, y: usize, rng: &mut dyn RngCore) -> Ray {
-        // Construct a camera ray directed at a randomly sampled point around the pixel location.
+    fn get_ray(&self, i: usize, j: usize, rng: &mut dyn RngCore) -> Ray {
+        // Construct a camera ray originating from the defocus disk and
+        // directed at a randomly sampled point around the pixel location i, j.
         let offset = self.sample_square(rng);
-        self.camera.ray_through_pixel_with_offset(x, y, offset)
+        self.camera.ray_through_pixel_with_offset(i, j, offset, rng)
     }
 
     fn sample_square(&self, rng: &mut dyn RngCore) -> Vec3 {
