@@ -1,14 +1,14 @@
 use crate::core::camera::{Camera, CameraDef};
 use crate::core::hittable::Hittable;
 use crate::core::hittable_list::HittableList;
-use crate::core::shape::ShapeDef;
+use crate::core::primitive::PrimitiveDef;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct SceneDef {
     camera: CameraDef,
-    objects: Vec<ShapeDef>,
+    objects: Vec<PrimitiveDef>,
 }
 
 pub struct Scene {
@@ -21,7 +21,7 @@ impl SceneDef {
         let objects: Vec<Box<dyn Hittable>> = self
             .objects
             .into_iter()
-            .map(ShapeDef::into_hittable)
+            .map(PrimitiveDef::into_hittable)
             .collect();
 
         let world = HittableList { objects };
@@ -37,14 +37,14 @@ impl SceneDef {
 mod tests {
     use super::*;
     use crate::core::material::MaterialDef;
-    use crate::core::Vec3;
+    use glam::Vec3;
     use serde_json;
 
-    fn eps(a: f64, b: f64) -> bool {
+    fn eps(a: f32, b: f32) -> bool {
         (a - b).abs() < 1e-9
     }
 
-    fn assert_vec3(v: &Vec3, x: f64, y: f64, z: f64) {
+    fn assert_vec3(v: &Vec3, x: f32, y: f32, z: f32) {
         assert!(eps(v.x, x) && eps(v.y, y) && eps(v.z, z));
     }
 
@@ -100,7 +100,7 @@ mod tests {
 
         // First sphere
         match &def.objects[0] {
-            ShapeDef::Sphere {
+            PrimitiveDef::Sphere {
                 center,
                 radius,
                 material,
@@ -114,12 +114,11 @@ mod tests {
                     _ => panic!(),
                 }
             }
-            _ => panic!("expected first object to be a sphere"),
         }
 
         // Second sphere
         match &def.objects[1] {
-            ShapeDef::Sphere {
+            PrimitiveDef::Sphere {
                 center,
                 radius,
                 material,
@@ -133,7 +132,6 @@ mod tests {
                     _ => panic!(),
                 }
             }
-            _ => panic!("expected second object to be a sphere"),
         }
 
         // Build runtime scene (Arc<dyn Hittable> root). Should not panic.

@@ -1,6 +1,6 @@
 mod core;
 mod materials;
-mod shapes;
+mod primitives;
 
 #[cfg(target_arch = "wasm32")]
 use crate::core::renderer::Renderer;

@@ -1,14 +1,17 @@
-use super::{Color, HitRecord, Ray};
-use crate::materials::{dielectric::Dielectric, lambertian::Lambertian, metal::Metal};
+use super::hittable::HitRecord;
+use super::ray::Ray;
+use crate::materials::*;
+use glam::Vec3;
+use rand::RngCore;
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 
 #[derive(Deserialize, Serialize, Debug)]
 #[serde(tag = "type", rename_all = "lowercase", deny_unknown_fields)]
 pub enum MaterialDef {
-    Lambertian { albedo: Color },
-    Metal { albedo: Color, fuzz: f64 },
-    Dielectric { ir: f64 }, // ....
+    Lambertian { albedo: Vec3 },
+    Metal { albedo: Vec3, fuzz: f32 },
+    Dielectric { ir: f32 },
 }
 
 impl MaterialDef {
@@ -22,10 +25,10 @@ impl MaterialDef {
 }
 
 pub struct MatBounce {
-    pub attenuation: Color,
+    pub attenuation: Vec3,
     pub scattered: Ray,
 }
 
 pub trait Material: Send + Sync {
-    fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<MatBounce>;
+    fn scatter(&self, r_in: &Ray, rec: &HitRecord, rng: &mut dyn RngCore) -> Option<MatBounce>;
 }

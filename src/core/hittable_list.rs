@@ -1,5 +1,6 @@
 use super::hittable::{HitRecord, Hittable};
 use super::interval::Interval;
+use super::ray::Ray;
 
 pub struct HittableList {
     pub objects: Vec<Box<dyn Hittable>>,
@@ -28,7 +29,7 @@ impl HittableList {
 }
 
 impl Hittable for HittableList {
-    fn hit(&self, r: &super::Ray, ray_t: Interval) -> Option<HitRecord> {
+    fn hit(&self, r: &Ray, ray_t: Interval) -> Option<HitRecord> {
         let mut temp_rec: Option<HitRecord> = None;
         let mut closest_so_far = ray_t.max;
 

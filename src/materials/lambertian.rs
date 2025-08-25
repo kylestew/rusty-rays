@@ -1,15 +1,19 @@
+use crate::core::hittable::HitRecord;
 use crate::core::material::{MatBounce, Material};
-use crate::core::{Color, HitRecord, Ray, Vec3};
+use crate::core::math::{random_unit_vector, Vec3Ext};
+use crate::core::ray::Ray;
+use glam::Vec3;
+use rand::RngCore;
 
 #[derive(Clone, Copy, Debug)]
 pub struct Lambertian {
-    pub albedo: Color,
+    pub albedo: Vec3,
 }
 
 impl Material for Lambertian {
-    fn scatter(&self, _r_in: &Ray, rec: &HitRecord) -> Option<MatBounce> {
+    fn scatter(&self, _r_in: &Ray, rec: &HitRecord, rng: &mut dyn RngCore) -> Option<MatBounce> {
         // Cosine‑weighted random bounce
-        let mut scatter_direction = rec.normal + Vec3::random_unit_vector();
+        let mut scatter_direction = rec.normal + random_unit_vector(rng);
 
         // catch degenerate scatter direction
         if scatter_direction.near_zero() {

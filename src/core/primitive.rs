@@ -1,24 +1,26 @@
 use crate::core::hittable::Hittable;
 use crate::core::material::MaterialDef;
-use crate::core::Point3;
-use crate::shapes::sphere::Sphere;
+use crate::primitives::sphere::Sphere;
+use glam::Vec3;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "lowercase", deny_unknown_fields)]
-pub enum ShapeDef {
+pub enum PrimitiveDef {
     Sphere {
-        center: Point3,
-        radius: f64,
+        center: Vec3,
+        radius: f32,
         material: MaterialDef,
-    }, // Plane { ... }
-       // Triangle { ... }
+    },
+    // Plane { ... }
+    // QUAD
+    // MESH
 }
 
-impl ShapeDef {
+impl PrimitiveDef {
     pub fn into_hittable(self) -> Box<dyn Hittable> {
         match self {
-            ShapeDef::Sphere {
+            PrimitiveDef::Sphere {
                 center,
                 radius,
                 material,

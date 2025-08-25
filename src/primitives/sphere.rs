@@ -1,17 +1,18 @@
 use crate::core::hittable::{HitRecord, Hittable};
 use crate::core::interval::Interval;
 use crate::core::material::Material;
-use crate::core::{Point3, Ray, Vec3};
+use crate::core::ray::Ray;
+use glam::Vec3;
 use std::sync::Arc;
 
 pub struct Sphere {
-    center: Point3,
-    radius: f64,
+    center: Vec3,
+    radius: f32,
     mat: Arc<dyn Material>,
 }
 
 impl Sphere {
-    pub fn new(center: Point3, radius: f64, mat: Arc<dyn Material>) -> Self {
+    pub fn new(center: Vec3, radius: f32, mat: Arc<dyn Material>) -> Self {
         Self {
             center,
             radius: radius.max(0.0),

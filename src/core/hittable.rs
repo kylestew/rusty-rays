@@ -1,7 +1,7 @@
 use super::interval::Interval;
 use super::material::Material;
 use super::ray::Ray;
-use super::vec3::{Point3, Vec3};
+use glam::Vec3;
 use std::sync::Arc;
 
 pub trait Hittable: Send + Sync {
@@ -9,17 +9,17 @@ pub trait Hittable: Send + Sync {
 }
 
 pub struct HitRecord {
-    pub p: Point3,
+    pub p: Vec3,
     pub normal: Vec3,
     pub mat: Arc<dyn Material>,
-    pub t: f64,
+    pub t: f32,
     pub front_face: bool,
 }
 
 impl HitRecord {
     pub fn new(
-        hit_p: Point3,
-        hit_t: f64,
+        hit_p: Vec3,
+        hit_t: f32,
         ray_d: Vec3,
         outward_normal: Vec3,
         mat: Arc<dyn Material>,
